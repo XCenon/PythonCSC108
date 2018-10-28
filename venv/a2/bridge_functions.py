@@ -127,6 +127,76 @@ def format_data(data: List[List[str]]) -> None:
     # function in this assignment. Do not work on this function until
     # you have implemented the other functions below.
 
+    # get the data inside
+    count = 1
+    newDatas = []
+    for items in data:
+        # ggive temp
+        newData = []
+
+        # ID
+        newData.append(count)
+        # name
+        newData.append(items[1])
+        # Highway
+        newData.append(items[2])
+
+        # LAT LON
+        newData.append(float(items[3]))
+        newData.append(float(items[4]))
+        # build year
+        newData.append(items[5])
+        # last rebuild
+        newData.append(items[6])
+
+        # last rebuild
+        newData.append(items[7])
+
+        # span
+        newData.append(items[8])
+
+        # span detail
+        spanNum = items[9]
+        indexOfEqual = spanNum.index("(")
+        semicolSplit = items[9][indexOfEqual:].split(";")
+        spanDetail = []
+        for span in semicolSplit:
+            if len(span):
+                temp = span.split("=")
+
+            # push the val into detail
+            spanDetail.append(temp[1])
+
+
+        # get rid of last one
+        spanDetail.pop(len(spanDetail) - 1)
+        newData.append(spanDetail)
+
+        # bridge length
+        if len(items[10]):
+            newData.append(float(items[10]))
+        else:
+            newData.append(0.0)
+
+        newData.append(items[11])
+
+        # BCI detail
+        BCIDetail = []
+        for x in items[12:]:
+            if len(x):
+                BCIDetail.append(float(x))
+
+        newData.append(BCIDetail)
+
+        print(newData)
+        print("------")
+
+
+        count += 1
+
+    data = newDatas
+    print(data)
+
  
 def get_bridge(bridge_data: List[list], bridge_id: int) -> list:
     """Return the data for the bridge with id bridge_id from bridge_data. If
@@ -177,7 +247,12 @@ def get_total_length_on_highway(bridge_data: List[list], highway: str) -> float:
     0.0
     """
     #TODO
+    sum = 0.0
+    for item in bridge_data:
+        if item[2] == highway:
+           sum += item[10]
 
+    return sum
 
 def get_distance_between(bridge1: list, bridge2: list) -> float:
     """Return the distance in kilometres, rounded to the nearest metre
@@ -189,6 +264,7 @@ def get_distance_between(bridge1: list, bridge2: list) -> float:
     """
     # TODO
     # Hint: use the provided helper function calculate_distance.
+    return calculate_distance(bridge1[3], bridge1[4], bridge2[3], bridge2[4])
     
     
 def find_closest_bridge(bridge_data: List[list], bridge_id: int) -> int:
@@ -346,10 +422,10 @@ def add_rehab(bridge_data: List[list], bridge_id: int, new_date: str,
 if __name__ == '__main__':
     pass 
 
-    # # To test your code with larger lists, you can uncomment the code below to
-    # # read data from the provided CSV file.
-    # bridges = read_data(open('bridge_data.csv'))
-    # format_data(bridges)
+    # To test your code with larger lists, you can uncomment the code below to
+    # read data from the provided CSV file.
+    bridges = read_data(open('bridge_data.csv'))
+    format_data(bridges)
 
     # # For example,
     # print(get_bridge(bridges, 3))
