@@ -188,14 +188,14 @@ def format_data(data: List[List[str]]) -> None:
 
         newData.append(BCIDetail)
 
-        print(newData)
-        print("------")
+        # print(newData)
+        newDatas.append(newData)
 
 
         count += 1
 
-    data = newDatas
-    print(data)
+    data[:] = newDatas[:]
+    # print(data)
 
  
 def get_bridge(bridge_data: List[list], bridge_id: int) -> list:
@@ -278,6 +278,16 @@ def find_closest_bridge(bridge_data: List[list], bridge_id: int) -> int:
     1
     """
     # TODO
+    mininDis = 999999999
+    closestIndex = 0
+    target = get_bridge(bridge_data, bridge_id)
+    for bridge in bridge_data:
+        curDis = get_distance_between(target, bridge)
+        if curDis < mininDis and target[0] != bridge[0]:
+            mininDis = curDis
+            closestIndex = bridge[0]
+
+    return closestIndex
 
 
 def find_bridges_in_radius(bridge_data: List[list], lat: float, long: float,
@@ -289,6 +299,13 @@ def find_bridges_in_radius(bridge_data: List[list], lat: float, long: float,
     [1, 2]
     """
     # TODO
+    targetlist = []
+    for bridge in bridge_data:
+        curDis = calculate_distance(bridge[3], bridge[4], lat, long)
+        if curDis < distance:
+            targetlist.append(bridge[0])
+
+    return targetlist
 
 
 def get_bridges_with_bci_below(bridge_data: List[list], bridge_ids: List[int],
@@ -300,7 +317,13 @@ def get_bridges_with_bci_below(bridge_data: List[list], bridge_ids: List[int],
     [2]
     """
     # TODO
+    list = []
+    for id in bridge_ids:
+        curBCI = bridge_data[id - 1][12]
+        if curBCI[0] < bci_limit:
+            list.append(id)
 
+    return list
 
 def get_bridges_containing(bridge_data: List[list], search: str) -> List[int]:
     """
@@ -313,7 +336,14 @@ def get_bridges_containing(bridge_data: List[list], search: str) -> List[int]:
     [1]
     """
     # TODO
+    list = []
+    for bridge in bridge_data:
+        bridgeName = bridge[1].upper()
+        index = bridgeName.find(search.upper(), 0, len(bridgeName))
+        if index != -1 :
+            list.append(bridge[0])
 
+    return list
 
 def assign_inspectors(bridge_data: List[list], inspectors: List[List[float]],
                       max_bridges: int) -> List[List[int]]:
@@ -343,7 +373,62 @@ def assign_inspectors(bridge_data: List[list], inspectors: List[List[float]],
     [[], [1, 2]]
     """
     # TODO
+    inspectList = []
+    checked = [0] * len(bridge_data)
+    print(checked)
+    for bridge in bridge_data:
+        print(bridge)
 
+    for inspector in inspectors:
+        curList = []
+        # find high priority first
+        temp = find_bridges_in_radius(bridge_data, inspector[0], inspector[1], HIGH_PRIORITY_RADIUS)
+        temp = get_bridges_with_bci_below(bridge_data, temp, HIGH_PRIORITY_BCI)
+
+        for id in temp:
+            if checked[id - 1] == 0:
+                curList.append(id)
+
+        print(temp)
+        # if it is not enough
+        if len(curList) < max_bridges:
+            temp = find_bridges_in_radius(bridge_data, inspector[0], inspector[1], MEDIUM_PRIORITY_RADIUS)
+            temp = get_bridges_with_bci_below(bridge_data, temp, MEDIUM_PRIORITY_BCI)
+
+            for id in temp:
+                if checked[id - 1] == 0:
+                    curList.append(id)
+
+        # if it is not enough
+        if len(curList) < max_bridges:
+            temp = find_bridges_in_radius(bridge_data, inspector[0], inspector[1], LOW_PRIORITY_RADIUS)
+            temp = get_bridges_with_bci_below(bridge_data, temp, LOW_PRIORITY_BCI)
+
+            for id in temp:
+                if checked[id - 1] == 0:
+                    curList.append(id)
+
+
+        print(checked)
+        print(curList)
+
+        newList = []
+        index = 0
+        curNumberInNewList = 0
+
+        # now push into new List
+        while(index < len(temp) and curNumberInNewList < max_bridges):
+            # not checked by others
+            if checked[temp[index] - 1] == 0:
+                newList.append(temp[index])
+                curNumberInNewList += 1
+                checked[temp[index] - 1] = 1
+
+            index += 1
+
+        inspectList.append(newList)
+
+    return inspectList
 
 def inspect_bridges(bridge_data: List[list], bridge_ids: List[int], date: str, 
                     bci: float) -> None:
@@ -428,7 +513,8 @@ if __name__ == '__main__':
     format_data(bridges)
 
     # # For example,
-    # print(get_bridge(bridges, 3))
+    print(assign_inspectors(THREE_BRIDGES, [[38.691, -80.85], [43.20, -80.35]], 2))
+
     # expected = [3, 'NORTH PARK STEET UNDERPASS', '403', 43.165918, -80.263791,
     #             '1962', '2013', '2009', 4, [12.2, 18.0, 18.0, 12.2], 60.8,
     #             '04/13/2012', [71.4, 69.9, 67.7, 68.9, 69.1, 69.9, 72.8]]
