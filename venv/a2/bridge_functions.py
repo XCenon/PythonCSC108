@@ -35,6 +35,7 @@ EARTH_RADIUS = 6371
 
 ####### BEGIN HELPER FUNCTIONS ####################
 
+
 def read_data(csv_file: TextIO) -> List[List[str]]:
     """Read and return the contents of the open CSV file csv_file as a list of
     lists, where each inner list contains the values from one line of csv_file.
@@ -137,28 +138,28 @@ def format_data(data: List[List[str]]) -> None:
         # ID
         newData.append(count)
         # name
-        newData.append(items[1])
+        newData.append(items[NAME_INDEX])
         # Highway
-        newData.append(items[2])
+        newData.append(items[HIGHWAY_INDEX])
 
         # LAT LON
-        newData.append(float(items[3]))
-        newData.append(float(items[4]))
+        newData.append(float(items[LAT_INDEX]))
+        newData.append(float(items[LON_INDEX]))
         # build year
-        newData.append(items[5])
-        # last rebuild
-        newData.append(items[6])
+        newData.append(items[YEAR_INDEX])
+        # last MAJOR rebuild
+        newData.append(items[LAST_MAJOR_INDEX])
 
-        # last rebuild
-        newData.append(items[7])
+        # last MINOR rebuild
+        newData.append(items[LAST_MINOR_INDEX])
 
         # span
-        newData.append(items[8])
+        newData.append(items[NUM_SPANS_INDEX])
 
         # span detail
-        spanNum = items[9]
+        spanNum = items[SPAN_LENGTH_INDEX]
         indexOfEqual = spanNum.index("(")
-        semicolSplit = items[9][indexOfEqual:].split(";")
+        semicolSplit = items[SPAN_LENGTH_INDEX][indexOfEqual:].split(";")
         spanDetail = []
         for span in semicolSplit:
             if len(span):
@@ -173,16 +174,16 @@ def format_data(data: List[List[str]]) -> None:
         newData.append(spanDetail)
 
         # bridge length
-        if len(items[10]):
-            newData.append(float(items[10]))
+        if len(items[LENGTH_INDEX]):
+            newData.append(float(items[LENGTH_INDEX]))
         else:
             newData.append(0.0)
 
-        newData.append(items[11])
+        newData.append(items[LAST_INSPECTED_INDEX])
 
         # BCI detail
         BCIDetail = []
-        for x in items[12:]:
+        for x in items[BCIS_INDEX:]:
             if len(x):
                 BCIDetail.append(float(x))
 
@@ -190,7 +191,6 @@ def format_data(data: List[List[str]]) -> None:
 
         # print(newData)
         newDatas.append(newData)
-
 
         count += 1
 
@@ -232,7 +232,6 @@ def get_average_bci(bridge_data: List[list], bridge_id: int) -> float:
             # average through BCIs
             return sum(item[12]) / len(item[11])
 
-
     return 0.0
 
 
@@ -246,7 +245,7 @@ def get_total_length_on_highway(bridge_data: List[list], highway: str) -> float:
     >>> get_total_length_on_highway(THREE_BRIDGES, '401')
     0.0
     """
-    #TODO
+
     sum = 0.0
     for item in bridge_data:
         if item[2] == highway:
@@ -264,7 +263,7 @@ def get_distance_between(bridge1: list, bridge2: list) -> float:
     """
     # TODO
     # Hint: use the provided helper function calculate_distance.
-    return calculate_distance(bridge1[3], bridge1[4], bridge2[3], bridge2[4])
+    return calculate_distance(bridge1[LAT_INDEX], bridge1[LON_INDEX], bridge2[LAT_INDEX], bridge2[LON_INDEX])
     
     
 def find_closest_bridge(bridge_data: List[list], bridge_id: int) -> int:
@@ -278,16 +277,16 @@ def find_closest_bridge(bridge_data: List[list], bridge_id: int) -> int:
     1
     """
     # TODO
-    mininDis = 999999999
-    closestIndex = 0
+    minin_dis = 999999999
+    closest_index = 0
     target = get_bridge(bridge_data, bridge_id)
     for bridge in bridge_data:
-        curDis = get_distance_between(target, bridge)
-        if curDis < mininDis and target[0] != bridge[0]:
-            mininDis = curDis
-            closestIndex = bridge[0]
+        cur_dis = get_distance_between(target, bridge)
+        if cur_dis < minin_dis and target[0] != bridge[0]:
+            minin_dis = cur_dis
+            closest_index = bridge[ID_INDEX]
 
-    return closestIndex
+    return closest_index
 
 
 def find_bridges_in_radius(bridge_data: List[list], lat: float, long: float,
@@ -301,7 +300,7 @@ def find_bridges_in_radius(bridge_data: List[list], lat: float, long: float,
     # TODO
     targetlist = []
     for bridge in bridge_data:
-        curDis = calculate_distance(bridge[3], bridge[4], lat, long)
+        curDis = calculate_distance(bridge[LAT_INDEX], bridge[LON_INDEX], lat, long)
         if curDis < distance:
             targetlist.append(bridge[0])
 
@@ -319,11 +318,12 @@ def get_bridges_with_bci_below(bridge_data: List[list], bridge_ids: List[int],
     # TODO
     list = []
     for id in bridge_ids:
-        curBCI = bridge_data[id - 1][12]
+        curBCI = bridge_data[id - 1][BCIS_INDEX]
         if curBCI[0] < bci_limit:
             list.append(id)
 
     return list
+
 
 def get_bridges_containing(bridge_data: List[list], search: str) -> List[int]:
     """
@@ -340,10 +340,11 @@ def get_bridges_containing(bridge_data: List[list], search: str) -> List[int]:
     for bridge in bridge_data:
         bridgeName = bridge[1].upper()
         index = bridgeName.find(search.upper(), 0, len(bridgeName))
-        if index != -1 :
+        if index != - 1:
             list.append(bridge[0])
 
     return list
+
 
 def assign_inspectors(bridge_data: List[list], inspectors: List[List[float]],
                       max_bridges: int) -> List[List[int]]:
@@ -375,9 +376,6 @@ def assign_inspectors(bridge_data: List[list], inspectors: List[List[float]],
     # TODO
     inspectList = []
     checked = [0] * len(bridge_data)
-    print(checked)
-    for bridge in bridge_data:
-        print(bridge)
 
     for inspector in inspectors:
         curList = []
@@ -389,7 +387,6 @@ def assign_inspectors(bridge_data: List[list], inspectors: List[List[float]],
             if checked[id - 1] == 0:
                 curList.append(id)
 
-        print(temp)
         # if it is not enough
         if len(curList) < max_bridges:
             temp = find_bridges_in_radius(bridge_data, inspector[0], inspector[1], MEDIUM_PRIORITY_RADIUS)
@@ -409,15 +406,12 @@ def assign_inspectors(bridge_data: List[list], inspectors: List[List[float]],
                     curList.append(id)
 
 
-        print(checked)
-        print(curList)
-
         newList = []
         index = 0
         curNumberInNewList = 0
 
         # now push into new List
-        while(index < len(temp) and curNumberInNewList < max_bridges):
+        while index < len(temp) and curNumberInNewList < max_bridges :
             # not checked by others
             if checked[temp[index] - 1] == 0:
                 newList.append(temp[index])
@@ -429,6 +423,7 @@ def assign_inspectors(bridge_data: List[list], inspectors: List[List[float]],
         inspectList.append(newList)
 
     return inspectList
+
 
 def inspect_bridges(bridge_data: List[list], bridge_ids: List[int], date: str, 
                     bci: float) -> None:
@@ -464,6 +459,9 @@ def inspect_bridges(bridge_data: List[list], bridge_ids: List[int], date: str,
     """
     
     # TODO
+    for id in bridge_ids:
+        bridge_data[id - 1][LAST_INSPECTED_INDEX] = date
+        bridge_data[id - 1][BCIS_INDEX].insert(0, bci)
 
 
 def add_rehab(bridge_data: List[list], bridge_id: int, new_date: str, 
@@ -501,6 +499,10 @@ def add_rehab(bridge_data: List[list], bridge_id: int, new_date: str,
     True
     """
     # TODO
+    if is_major:
+        bridge_data[bridge_id - 1][LAST_MAJOR_INDEX] = new_date
+    else:
+        bridge_data[bridge_id - 1][LAST_MINOR_INDEX] = new_date
 
 
 
@@ -511,10 +513,13 @@ if __name__ == '__main__':
     # read data from the provided CSV file.
     bridges = read_data(open('bridge_data.csv'))
     format_data(bridges)
+    print(bridges)
 
     # # For example,
     print(assign_inspectors(THREE_BRIDGES, [[38.691, -80.85], [43.20, -80.35]], 2))
-
+    inspect_bridges(THREE_BRIDGES, [1], '09/15/2018', 71.9)
+    add_rehab(THREE_BRIDGES, 1, '2018', False)
+    print(THREE_BRIDGES)
     # expected = [3, 'NORTH PARK STEET UNDERPASS', '403', 43.165918, -80.263791,
     #             '1962', '2013', '2009', 4, [12.2, 18.0, 18.0, 12.2], 60.8,
     #             '04/13/2012', [71.4, 69.9, 67.7, 68.9, 69.1, 69.9, 72.8]]
