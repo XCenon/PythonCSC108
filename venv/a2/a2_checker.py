@@ -4,12 +4,12 @@ import sys
 
 sys.path.insert(0, './pyta')
 
-# print("================= Start: checking coding style =================")
-#
-# import python_ta
-# python_ta.check_all('bridge_functions.py', config='pyta/a2_pyta.txt')
-#
-# print("================= End: checking coding style =================\n")
+#print("================= Start: checking coding style =================")
+
+#import python_ta
+#python_ta.check_all('bridge_functions.py', config='pyta/a2_pyta.txt')
+
+#print("================= End: checking coding style =================\n")
 
 print("================= Start: checking parameter and return types =================")
 
